@@ -7,11 +7,8 @@ const cors = require('cors')
 const userRouter = require('./routers/users')
 const authRouter = require('./routers/auth')
 const parser = require('body-parser')
-const { engine } = require('express-handlebars')
 const server = Express()
-const fs = require('fs/promises')
-const multer = require('multer')
-const upload = multer({ dest: 'uploads/' })
+
 
 const { MODE } = process.env
 
@@ -19,17 +16,6 @@ const { mongoose } = require('./models/userModel')
 
 const DATABASE = MODE == 'test' ? 'stepTest' : "stepDB"
 
-
-const path = require("path");
-
-server.engine('.hbs', engine({
-    defaultLayout: 'navbar',
-    extname: '.hbs',
-    partialsDir: path.join(__dirname, 'views/partials'),
-    layoutsDir: path.join(__dirname, 'views/layouts')
-}));
-server.set('view engine', '.hbs');
-server.set('views', path.join(__dirname, 'views'));
 
 // use JSON middleware 
 server.use(Express.json())
@@ -56,21 +42,6 @@ server.use(morgan({ format: 'combined' }))
 server.use('/user', userRouter)
 server.use('/auth', authRouter)
 
-server.get('/file', (req, res) => {
-
-    res.render('layouts/navbar', { user: 'Admin', auth: false })
-
-})
-
-server.post('/file', upload.single('file'), async (req, res) => {
-    console.log(req.body)
-    console.log(req.file)
-
-    await fs.rename(path.resolve(__dirname, req.file.path), path.join(__dirname, 'documents', `${new Date().getTime()}${req.file.originalname}`))
-    // await fs.unlink(path.resolve(__dirname, req.file.path))
-    res.status(200).json({ 'message': 'data' })
-
-})
 
 
 // server.use((req, res, next)=> {
@@ -82,13 +53,8 @@ server.post('/file', upload.single('file'), async (req, res) => {
 // })
 
 
-const middleMan = (req, res, next) => {
-    console.log('health')
-    next()
-}
 
-
-server.get('/health', middleMan, (req, res) => {
+server.get('/health', (req, res) => {
     console.log(req.ip)
     res.json({ 'version': os.arch(), 'cpus': os.cpus(), 'platform': os.platform(), 'release': os.release() })
 })
