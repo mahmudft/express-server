@@ -1,75 +1,52 @@
+const e = require('express')
 const Express = require('express')
 require('dotenv').config()
-const os = require('os')
-const morgan = require('morgan')
-const helmet = require('helmet')
-const cors = require('cors')
-const userRouter = require('./routers/users')
-const authRouter = require('./routers/auth')
-const parser = require('body-parser')
+
 const server = Express()
-
-
-const { MODE } = process.env
-
-const { mongoose } = require('./models/userModel')
-
-const DATABASE = MODE == 'test' ? 'stepTest' : "stepDB"
-
-
-// use JSON middleware 
 server.use(Express.json())
-server.use(parser.urlencoded({ extended: true }))
-server.use(cors())
-// server.use(helmet({
-//     xXssProtection: true,
-// }))
-server.use(morgan({ format: 'combined' }))
 
-// const rateLimit = require('express-rate-limit')
+let users = [
+    { name: "User1", id: 1 },
+    { name: "User2", id: 2 },
+    { name: "User3", id: 3 },
+    { name: "User4", id: 4 }
+]
 
-// const limiter = rateLimit({
-// 	windowMs: 2 * 60 * 1000, // 2 minutes
-// 	max: 2, // Limit each IP to 2 requests per `window` (here, per 2 minutes)
-// 	standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-// 	legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-//     message: "You have reached rate limit"
+// server.get('/user', (req, res) => {
+//     res.status(200).json(users)
 // })
 
-// server.use(limiter)
+server.post('/user', (req, res) => {
+    const { name, id } = req.body
+    users.push({name, id})
+    res.status(200).json(users)
+})
 
-
-server.use('/user', userRouter)
-server.use('/auth', authRouter)
-
-
-
-// server.use((req, res, next)=> {
-//     console.log(`Time: ${new Date().getDate()}`)
-//     if(req.headers.authorization){
-//         next()
-//     }
-//     res.status(403).json({"message": 'Not authorized'})
+// server.delete('/user', (req, res) => {
+//     const { id } = req.body
+//     users = users.filter(el => el.id != id)
+//     res.status(200).json(users)
 // })
 
-
+// localhost:3001/user/1
+server.delete('/user/:id', (req, res) => {
+    const { id } = req.params
+    if (id) {
+        let user = users.find(el => el.id == id)
+        users = users.filter(el => el.id != id)
+        if (!user) {
+            return res.json({"message" : "user is not found"})
+        }
+        return res.json(users)
+    }
+    return res.json({"message" : "id not provided"})
+})
 
 server.get('/health', (req, res) => {
-    console.log(req.ip)
-    res.json({ 'version': os.arch(), 'cpus': os.cpus(), 'platform': os.platform(), 'release': os.release() })
+    console.log(req.query)
+    res.json({'version': '1.0.0'}, { "CPU": "motherboard" })
 })
-
 
 server.listen(process.env.PORT, () => {
-    mongoose.connect(`mongodb://fatullayevm:M@hmud141747@cluster0.lchodzh.mongodb.net/test?retryWrites=true&ssl=false`).then((res) => {
-        console.log(`Server is listening on port: ${process.env.PORT} `)
-        console.log(`DB is listening on port: 27017 `)
-    })
-        .catch((err) => [
-            console.log(err)
-        ])
-
+    console.log(`Server is listening on port: ${process.env.PORT}`)
 })
-
-
-
