@@ -61,7 +61,7 @@ server.get('/health', (req, res) => {
 
 
 server.listen(process.env.PORT, () => {
-    mongoose.connect(`mongodb+srv://fatullayevm:<password>@cluster0.lchodzh.mongodb.net/${DATABASE}?retryWrites=true&w=majority`).then((res) => {
+    mongoose.connect(`mongodb://fatullayevm:M@hmud141747@cluster0.lchodzh.mongodb.net/test?retryWrites=true&ssl=false`).then((res) => {
         console.log(`Server is listening on port: ${process.env.PORT} `)
         console.log(`DB is listening on port: 27017 `)
     })
